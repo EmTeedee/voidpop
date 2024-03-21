@@ -1,3 +1,6 @@
 [main]
 max-branches=20
 max-return=20
+ignore-paths=^.pybuild/.*$,
+             ^build/.*$,
+             ^debian/.*$
