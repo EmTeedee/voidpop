@@ -1,0 +1,26 @@
+.TH voidpop "1" "March 2024" "voidpop version 1.0" "User Commands"
+.SH NAME
+voidpop \- dummy pop3 server
+.SH SYNOPSIS
+voidpop [\-c config] [\-d 1]
+.SH DESCRIPTION
+This program starts a dummy pop3 server that accepts any login and
+reports no messages.
+.SS Options
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+help
+.TP
+\fB\-\-version\fR
+version information
+.TP
+\fB\-c\fR, \fB\-\-config\fR <FILE>
+use <CONFIG> for configuration (default: \fI\,/etc/fail2ban\-honeyd.conf\/\fP)
+.TP
+\fB\-d\fR, \fB\-\-debug\fR [1|0]
+turn debug on (default: off)
+.SH FILES
+.TP
+\fC/etc/fail2ban\-honeyd.conf\fR
+.SH "SEE ALSO"
+fail2ban(1)

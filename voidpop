@@ -124,3 +124,6 @@ async def handler(stream: trio.SocketStream) -> None:
     except Exception:
         logger.warning("[%s] Crashed", id, exc_info=True)
     logger.debug("[%s] Connection closed", id)
+
+if __name__ == '__main__':
+    main()

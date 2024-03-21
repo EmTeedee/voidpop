@@ -1,0 +1,12 @@
+Source: voidpop
+Maintainer: Tobias Tiederle <ttiederle@fimltd.org>
+Section: python
+Priority: optional
+Build-Depends: dh-python, dh-systemd, python3-setuptools, python3-all, debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage: https://gitlab.teahut.net/cygnius/voidpop
+
+Package: voidpop
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}, python3-trio
+Description: Dummy POP3 server that accepts any login and never has any messages

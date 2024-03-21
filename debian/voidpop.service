@@ -1,0 +1,12 @@
+[Unit]
+Description=VoidPOP
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/default/voidpop
+EnvironmentFile=-/etc/default/voidpop.d/*
+ExecStart=/usr/sbin/voidpop
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

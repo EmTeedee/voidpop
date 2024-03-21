@@ -1,0 +1,137 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          voidpop
+# Required-Start:    $remote_fs $syslog +iptables
+# Required-Stop:     $remote_fs $syslog +iptables
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: VoidPOP - dummy POP3 server
+### END INIT INFO
+# voidpop
+# description: VoidPOP - dummy POP3 server
+# processname: voidpop
+
+DAEMON=/usr/sbin/voidpop
+
+NAME=voidpop
+DESC="voidpop pop3 server"
+PIDFILE=/var/run/${NAME}.pid
+SCRIPTNAME=/etc/init.d/${NAME}
+DAEMONOPTS=""
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+DAEMONOPTS="${OPTIONS}"
+
+# Load the VERBOSE setting and other rcS variables
+[ -f /etc/default/rcS ] && . /etc/default/rcS
+
+# Define LSB log_* functions.
+. /lib/lsb/init-functions
+
+do_start()
+{
+    # Return
+    #   0 if daemon has been started
+    #   1 if daemon was already running
+    #   2 if daemon could not be started
+
+    is_running && return 1
+
+    start-stop-daemon --start --quiet --background -m --pidfile ${PIDFILE} \
+        --oknodo --exec $DAEMON -- $DAEMONOPTS > /dev/null \
+        || return 2
+
+    return 0
+}
+
+is_running()
+{
+    if [ -f ${PIDFILE} ]; then
+        PID=`cat $PIDFILE`
+        if [ -z "`ps axf | grep ${PID} | grep -v grep`" ]; then
+            rm ${PIDFILE}
+            return 1
+        else
+            return 0
+        fi
+    fi
+    return 1
+}
+
+do_stop()
+{
+    # Return
+    #   0 if daemon has been stopped
+    #   1 if daemon was already stopped
+    #   2 if daemon could not be stopped
+    #   other if a failure occurred
+    
+    is_running || return 1
+
+    start-stop-daemon --stop --quiet --pidfile ${PIDFILE} --oknodo > /dev/null \
+        || return 2
+
+    # wait until process is dead
+    count=1
+    while is_running && [ $count -lt 10 ]; do
+        sleep 1
+        count=$(($count+1))
+    done
+    [ $count -ge 10 ] && return 3 # failed to stop
+
+    return 0
+}
+
+command="$1"
+case "$command" in
+    start|force-start)
+        [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+        do_start "$command"
+        ret=$?
+        if [ "$VERBOSE" != no ]; then
+            if [ $ret -eq 0 ]; then
+                log_end_msg 0
+            elif [ $ret -eq 1 ]; then
+                log_warning_msg " $DESC already started"
+            else
+                log_end_msg 1
+            fi
+        fi
+        ;;
+    status)
+        log_daemon_msg "Status of $DESC"
+        is_running
+        case $? in
+            0)  log_success_msg " $NAME is running";;
+            1)  log_failure_msg " $NAME is not running" && exit 3;;
+            *)  log_failure_msg " Unknown $NAME status code" && exit 3;;
+        esac
+        ;;
+    stop)
+        [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+        do_stop
+        ret=$?
+        if [ "$VERBOSE" != no ]; then
+            if [ $ret -eq 0 ]; then
+                log_end_msg 0
+            elif [ $ret -eq 1 ]; then
+                log_warning_msg " $DESC already stopped"
+            else
+                log_end_msg 1
+            fi
+        fi
+        ;;
+    force-reload|reload|restart)
+        $0 stop
+        $0 start
+        ;;
+
+    *)
+        echo "Usage: $SCRIPTNAME {status|start|stop|restart|reload|force-start|force-reload}">&2
+        exit 3
+esac
