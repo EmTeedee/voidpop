@@ -12,7 +12,7 @@
 # description: VoidPOP - dummy POP3 server
 # processname: voidpop
 
-DAEMON=/usr/sbin/voidpop.py
+DAEMON=/usr/bin/voidpop
 
 NAME=voidpop
 DESC="voidpop pop3 server"
