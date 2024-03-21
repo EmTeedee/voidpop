@@ -1,8 +1,9 @@
+'''voidpop setup file'''
 from pathlib import Path
 
 from setuptools import setup
 
-readme = Path("README.md").read_text()
+readme = Path("README.md").read_text(encoding="utf8")
 
 setup(
     name="voidpop",
@@ -14,13 +15,13 @@ setup(
     long_description_content_type="text/markdown",
     url="https://gitlab.teahut.net/cygnius/voidpop",
     py_modules=["voidpop"],
-    python_requires=">=3.8",
+    python_requires=">=3.7",
     install_requires=["trio"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.7",
     ],
     entry_points={"console_scripts": ["voidpop=voidpop:main"]},
 )
