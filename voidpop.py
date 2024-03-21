@@ -8,6 +8,7 @@ import logging
 import signal
 import socket
 import time
+import os
 from functools import partial
 from itertools import count
 from typing import List, Optional
@@ -18,17 +19,19 @@ connection_ids = count()
 logger = logging.getLogger(__name__)
 
 
-def parse_args():
+def parse_args(default_port: int):
     parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='Port can also be set using the VOIDPOP_PORT environment variable.'
     )
-    parser.add_argument("--port", type=int, default=110, help="Listen on PORT")
+    parser.add_argument("--port", type=int, default=default_port, help="Listen on PORT")
     parser.add_argument("--verbose", action="store_true", help="Log debug messages")
     return parser.parse_args()
 
 
 def main():
-    args = parse_args()
+    default_port = os.environ.get('VOIDPOP_PORT', 110)
+    args = parse_args(default_port)
     logging.basicConfig(
         datefmt="%Y-%m-%d %H:%M:%S",
         format=f"%(asctime)s.%(msecs)03d %(message)s",

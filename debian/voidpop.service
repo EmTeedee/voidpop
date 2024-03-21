@@ -5,7 +5,7 @@ Description=VoidPOP
 Type=simple
 EnvironmentFile=-/etc/default/voidpop
 EnvironmentFile=-/etc/default/voidpop.d/*
-ExecStart=/usr/sbin/voidpop
+ExecStart=/usr/sbin/voidpop.py
 Restart=always
 
 [Install]

@@ -3,3 +3,11 @@
 build
 dist
 env
+*.debhelper
+.pybuild
+debian/.debhelper
+debian/files
+debian/tmp
+debian/voidpop
+debian/voidpop.substvars
+debian/debhelper-build-stamp

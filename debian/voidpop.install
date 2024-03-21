@@ -1,1 +1,2 @@
-voidpop		usr/sbin/
+#!/usr/bin/dh-exec
+debian/voidpop.conf => etc/default/voidpop

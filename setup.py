@@ -6,13 +6,13 @@ readme = Path("README.md").read_text()
 
 setup(
     name="voidpop",
-    version="0.1.0",
+    version="1.0.0",
     author="Colin Chan",
     author_email="colinchan@lumeh.org",
     description="Dummy POP3 server that accepts any login and never has any messages",
     long_description=readme,
     long_description_content_type="text/markdown",
-    url="https://github.com/kalgynirae/voidpop",
+    url="https://gitlab.teahut.net/cygnius/voidpop",
     py_modules=["voidpop"],
     python_requires=">=3.8",
     install_requires=["trio"],

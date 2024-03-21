@@ -4,23 +4,23 @@ voidpop \- dummy pop3 server
 .SH SYNOPSIS
 voidpop [\-c config] [\-d 1]
 .SH DESCRIPTION
-This program starts a dummy pop3 server that accepts any login and
-reports no messages.
+Dummy POP3 server that accepts any login and never has any messages.
 .SS Options
 .TP
 \fB\-h\fR, \fB\-\-help\fR
-help
+show this help message and exit
 .TP
-\fB\-\-version\fR
-version information
+\fB\-\-port\fR <PORT>
+Listen on <PORT>
 .TP
-\fB\-c\fR, \fB\-\-config\fR <FILE>
-use <CONFIG> for configuration (default: \fI\,/etc/fail2ban\-honeyd.conf\/\fP)
-.TP
-\fB\-d\fR, \fB\-\-debug\fR [1|0]
-turn debug on (default: off)
+\fB\-\-verbose\fR
+Log debug messages
 .SH FILES
 .TP
-\fC/etc/fail2ban\-honeyd.conf\fR
-.SH "SEE ALSO"
-fail2ban(1)
+\fC/etc/default/voidpop\fR
+.SH ENVIRONMENT
+Using an environment variable to set the port has the same effect as using
+the \fI\-\-port\fP option.
+
+.IP "VOIDPOP_PORT <port>"
+Set the port to listen on.
