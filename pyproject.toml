@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "voidpop"
-version = "1.1.0"
+version = "1.1.1"
 description = "Dummy POP3 server that accepts any login and never has any messages"
 readme = "README.md"
 license = { text = "MIT" }
