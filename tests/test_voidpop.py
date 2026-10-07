@@ -7,11 +7,13 @@ import voidpop
 
 
 def test_unauthenticated_commands_rejected():
+    """commands before login are rejected"""
     pop3 = voidpop.POP3()
     assert pop3.handle("STAT", []).startswith(b"-ERR")
 
 
 def test_login_flow():
+    """a full login/quit session is accepted"""
     pop3 = voidpop.POP3()
     assert pop3.handle("USER", ["x"]).startswith(b"+OK")
     assert pop3.handle("PASS", ["y"]).startswith(b"+OK")
@@ -24,12 +26,14 @@ def test_login_flow():
 
 
 def test_port_from_environment(monkeypatch):
+    """VOIDPOP_PORT sets the default, --port overrides it"""
     monkeypatch.setenv("VOIDPOP_PORT", "2110")
     assert voidpop.parse_args([]).port == 2110
     assert voidpop.parse_args(["--port", "9"]).port == 9
 
 
 async def test_fragmented_and_pipelined_commands():
+    """commands are parsed regardless of TCP chunking"""
     client, server = memory_stream_pair()
     async with trio.open_nursery() as nursery:
         nursery.start_soon(voidpop.handler, server)
@@ -45,6 +49,7 @@ async def test_fragmented_and_pipelined_commands():
 
 
 async def test_overlong_line_closes_connection():
+    """a line without terminator beyond the limit ends the session"""
     client, server = memory_stream_pair()
     with trio.fail_after(5):
         async with trio.open_nursery() as nursery:
@@ -56,4 +61,5 @@ async def test_overlong_line_closes_connection():
 
 @pytest.mark.parametrize("cmd", ["", "FOO"])
 def test_unknown_command(cmd):
+    """unknown or empty commands get an error"""
     assert voidpop.POP3().handle(cmd, []).startswith(b"-ERR")

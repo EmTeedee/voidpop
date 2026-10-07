@@ -1,6 +1,8 @@
 include:
     - project: 'cygnius/gitlab-ci-templates'
       file: '/python-lint.yml'
+    - project: 'cygnius/gitlab-ci-templates'
+      file: '/shell-lint.yml'
 
 variables:
     PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/voidpop/${CI_COMMIT_TAG}"

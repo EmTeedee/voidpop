@@ -13,8 +13,9 @@ import argparse
 import re
 import subprocess
 import sys
-import tomllib
 from pathlib import Path
+
+import tomllib
 
 ROOT = Path(__file__).resolve().parent.parent
 IMAGE_TAG = "debian:trixie"
@@ -47,9 +48,11 @@ def check_versions(tag: str | None) -> str:
 def latest_pins() -> tuple[str, str]:
     """pull the image; return its pinned reference and snapshot timestamp"""
     run("docker", "pull", "-q", IMAGE_TAG)
-    repo_digest = run("docker", "image", "inspect", "--format", "{{index .RepoDigests 0}}", IMAGE_TAG)
+    repo_digest = run("docker", "image", "inspect", "--format", "{{index .RepoDigests 0}}",
+                      IMAGE_TAG)
     reference = f"{IMAGE_TAG}@{repo_digest.split('@')[1]}"
-    sources = run("docker", "run", "--rm", reference, "cat", "/etc/apt/sources.list.d/debian.sources")
+    sources = run("docker", "run", "--rm", reference, "cat",
+                  "/etc/apt/sources.list.d/debian.sources")
     match = re.search(r"snapshot\.debian\.org/archive/debian/(\d{8}T\d{6}Z)", sources)
     if not match:
         sys.exit("image has no snapshot.debian.org timestamp in debian.sources")
@@ -69,7 +72,7 @@ def rewrite(path: str, pattern: re.Pattern[str], replacement: str) -> None:
 
 def main() -> None:
     """entry point"""
-    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n", maxsplit=1)[0])
     parser.add_argument("--tag", help="also require this release tag (e.g. v1.1.0) to match")
     parser.add_argument("--check-only", action="store_true", help="only verify versions")
     args = parser.parse_args()

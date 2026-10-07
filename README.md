@@ -33,11 +33,11 @@ built. To reproduce locally:
 
 ### Refreshing pins
 
-`dist-tools/update-pins.py` verifies that `pyproject.toml` and `debian/changelog`
+`dist-tools/update_pins.py` verifies that `pyproject.toml` and `debian/changelog`
 agree, then pulls `debian:trixie` and updates the image digest
 (`dist-tools/BUILD_IMAGE`, `.gitlab-ci.yml`) and the apt snapshot timestamp
 (`dist-tools/build-release.sh`). Use `--check-only` to only verify versions.
 Renovate (`renovate.json`) keeps the GitHub Actions SHAs, Python dependencies and
 the image digest (`.gitlab-ci.yml`, `dist-tools/BUILD_IMAGE`) current. It cannot
 derive the matching apt snapshot timestamp, so after merging an image-digest
-update, run `dist-tools/update-pins.py` and commit the `SNAPSHOT=` change.
+update, run `dist-tools/update_pins.py` and commit the `SNAPSHOT=` change.
