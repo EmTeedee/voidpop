@@ -1,3 +1,50 @@
 include:
     - project: 'cygnius/gitlab-ci-templates'
       file: '/python-lint.yml'
+
+variables:
+    PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/voidpop/${CI_COMMIT_TAG}"
+
+.release-tag: &release-tag
+    rules:
+        - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+
+pytest:
+    stage: test
+    image: python:3.13
+    script:
+        - pip install -e '.[dev]'
+        - pytest
+
+build:
+    stage: build
+    <<: *release-tag
+    # keep in sync with dist-tools/BUILD_IMAGE
+    image: debian:trixie@sha256:913f6706df59a68922d1dd08f78c2476560a8d367897200a6005b00e5f67c2d5
+    script:
+        - dist-tools/check-version.sh "$CI_COMMIT_TAG"
+        - dist-tools/build-release.sh
+    artifacts:
+        paths:
+            - dist/
+
+release:
+    stage: deploy
+    <<: *release-tag
+    image: registry.gitlab.com/gitlab-org/release-cli:latest
+    needs: [build]
+    before_script:
+        - apk add --no-cache curl
+    script:
+        - |
+          for f in dist/*; do
+            curl --fail --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+                 --upload-file "$f" "${PACKAGE_REGISTRY_URL}/$(basename "$f")"
+          done
+        - |
+          assets=""
+          for f in dist/*; do
+            n=$(basename "$f")
+            assets="$assets --assets-link '{\"name\":\"$n\",\"url\":\"${PACKAGE_REGISTRY_URL}/$n\"}'"
+          done
+          eval release-cli create --name "$CI_COMMIT_TAG" --tag-name "$CI_COMMIT_TAG" $assets

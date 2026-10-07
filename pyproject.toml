@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voidpop"
+version = "1.1.0"
+description = "Dummy POP3 server that accepts any login and never has any messages"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Colin Chan", email = "colinchan@lumeh.org" }]
+requires-python = ">=3.10"
+dependencies = ["trio"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-trio", "ruff", "pylint"]
+
+[project.urls]
+Homepage = "https://gitlab.teahut.net/cygnius/voidpop"
+Source = "https://github.com/EmTeedee/voidpop"
+
+[project.scripts]
+voidpop = "voidpop:main"
+
+[tool.setuptools]
+py-modules = ["voidpop"]
+
+[tool.pytest.ini_options]
+trio_mode = true
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]

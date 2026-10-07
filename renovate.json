@@ -1,0 +1,36 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigestsToSemver"],
+  "enabledManagers": ["github-actions", "gitlab-ci", "pep621", "custom.regex"],
+  "customManagers": [
+    {
+      "description": "Build image digest used by the release scripts",
+      "customType": "regex",
+      "managerFilePatterns": ["/^dist-tools/BUILD_IMAGE$/"],
+      "matchStrings": [
+        "(?<depName>debian):(?<currentValue>[a-z0-9.-]+)@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Only bump the digest of the Debian build image, never switch release",
+      "matchDepNames": ["debian"],
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["digest"],
+      "groupName": "build image",
+      "commitMessageTopic": "build image"
+    },
+    {
+      "matchDepNames": ["debian"],
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "enabled": false
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
+    }
+  ]
+}

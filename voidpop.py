@@ -1,56 +1,68 @@
 #!/usr/bin/env python3
 """Dummy POP3 server that accepts any login and never has any messages"""
-from __future__ import annotations
-
 import argparse
+import contextlib
 import enum
 import logging
+import os
 import socket
 import time
-import os
+from importlib import metadata
 from itertools import count
-from typing import List, Optional
 
 import trio
+
+DEFAULT_PORT = 110
+# RFC 1939 limits commands to 255 octets; be generous but bounded
+MAX_LINE_LENGTH = 1024
 
 connection_ids = count()
 logger = logging.getLogger(__name__)
 
 
-def parse_args(default_port: int):
+def get_version() -> str:
+    '''installed package version'''
+    try:
+        return metadata.version("voidpop")
+    except metadata.PackageNotFoundError:
+        return "unknown"
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     '''argument parsing'''
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='Port can also be set using the VOIDPOP_PORT environment variable.'
     )
-    parser.add_argument("--port", type=int, default=default_port, help="Listen on PORT")
+    parser.add_argument(
+        "--port", type=int, default=os.environ.get("VOIDPOP_PORT", DEFAULT_PORT),
+        help="Listen on PORT (default: %(default)s)",
+    )
     parser.add_argument("--verbose", action="store_true", help="Log debug messages")
-    return parser.parse_args()
+    parser.add_argument("--version", action="version", version=f"%(prog)s {get_version()}")
+    return parser.parse_args(argv)
 
 
-def main():
+def main(argv: list[str] | None = None) -> None:
     '''main function'''
-    default_port = os.environ.get('VOIDPOP_PORT', 110)
-    args = parse_args(default_port)
+    args = parse_args(argv)
     logging.basicConfig(
         datefmt="%Y-%m-%d %H:%M:%S",
         format="%(asctime)s.%(msecs)03d %(message)s",
         level=logging.DEBUG if args.verbose else logging.INFO,
     )
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
         trio.run(trio.serve_tcp, handler, args.port)
-    except KeyboardInterrupt:
-        return
 
 
-def return_ok(msg: Optional[str] = None) -> bytes:
+def return_ok(msg: str | None = None) -> bytes:
     '''return with ok'''
     if msg is None:
         return b"+OK\r\n"
     return b"+OK %b\r\n" % msg.encode("ascii", errors="replace")
 
 
-def return_err(msg: Optional[str] = None) -> bytes:
+def return_err(msg: str | None = None) -> bytes:
     '''return with error'''
     if msg is None:
         return b"-ERR\r\n"
@@ -76,7 +88,7 @@ class POP3:
         '''construct welcome banner'''
         return return_ok(f"<{time.monotonic()}@{socket.gethostname()}>")
 
-    def handle(self, command: str, args: List[str]) -> bytes:
+    def handle(self, command: str, args: list[str]) -> bytes:
         '''command handler'''
         if self.state == State.AUTHORIZATION:
             if command == "USER":
@@ -115,6 +127,18 @@ class POP3:
         return return_err("unrecognized command")
 
 
+async def read_lines(stream: trio.SocketStream):
+    '''yield complete CRLF/LF terminated lines, however TCP chunked them'''
+    buffer = b""
+    async for data in stream:
+        buffer += data
+        while (end := buffer.find(b"\n")) != -1:
+            line, buffer = buffer[:end], buffer[end + 1:]
+            yield line.rstrip(b"\r")
+        if len(buffer) > MAX_LINE_LENGTH:
+            raise ValueError("command line too long")
+
+
 async def handler(stream: trio.SocketStream) -> None:
     '''connection handler'''
     connection_id = next(connection_ids)
@@ -122,14 +146,11 @@ async def handler(stream: trio.SocketStream) -> None:
     logger.debug("[%s] Connection opened", connection_id)
     try:
         await stream.send_all(pop3.banner())
-        async for data in stream:
-            command, *args = (
-                data.decode("ascii", errors="replace").rstrip("\r\n").split(" ")
-            )
-            command = command.upper()
-            response = pop3.handle(command, args)
+        async for line in read_lines(stream):
+            command, *args = line.decode("ascii", errors="replace").split(" ")
+            response = pop3.handle(command.upper(), args)
             await stream.send_all(response)
-            logger.debug("[%s] - %r", connection_id, data)
+            logger.debug("[%s] - %r", connection_id, line)
             logger.debug("[%s]   -> %r", connection_id, response)
             if pop3.state in {State.UPDATE, State.DONE}:
                 break

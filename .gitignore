@@ -11,3 +11,6 @@ debian/tmp
 debian/voidpop
 debian/voidpop.substvars
 debian/debhelper-build-stamp
+.pytest_cache
+.ruff_cache
+__pycache__

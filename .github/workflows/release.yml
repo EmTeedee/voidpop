@@ -1,0 +1,30 @@
+name: Release
+# Push a tag such as v1.1.0 to build and publish a release.
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Verify tag matches package versions
+        run: dist-tools/check-version.sh "$GITHUB_REF_NAME"
+      - name: Build sdist, wheel and .deb in a clean Debian container
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src "$(cat dist-tools/BUILD_IMAGE)" dist-tools/build-release.sh
+      - uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-path: dist/*
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
